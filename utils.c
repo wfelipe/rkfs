@@ -20,7 +20,7 @@
 #include <linux/blkdev.h>
 #include <asm/uaccess.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 void rkfs_dump_vfs_super_block(const struct super_block *sb,
 			       const char *frmt, ...)

@@ -14,7 +14,7 @@
 #include <linux/fs.h>
 #include <linux/locks.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 int rkfs_free_inode(struct inode *vfs_inode,
 		    unsigned short *res_icount, unsigned short *res_iblkno)

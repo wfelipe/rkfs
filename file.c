@@ -13,7 +13,7 @@
 #include <linux/fs.h>
 #include <linux/sched.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 int rkfs_sync_file(struct file *file, struct dentry *dentry, int datasync)
 {

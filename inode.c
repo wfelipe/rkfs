@@ -19,7 +19,7 @@
 #include <linux/quotaops.h>
 #include <linux/module.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 MODULE_AUTHOR("R.K.Raja");
 MODULE_DESCRIPTION("RK Floppy Filesystem");

@@ -14,7 +14,7 @@
 #include <linux/fs.h>
 #include <linux/blkdev.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 int rkfs_readpage(struct file *file, struct page *page)
 {

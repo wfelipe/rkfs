@@ -14,7 +14,7 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 unsigned short rkfs_count_free(void *map, unsigned short offset,
 			       unsigned short total_blocks)

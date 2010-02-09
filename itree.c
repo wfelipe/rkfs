@@ -14,7 +14,7 @@
 #include <linux/locks.h>
 #include <linux/smp_lock.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 /*
 * A confusing data-structure for inode tree used by rkfs_get_block,

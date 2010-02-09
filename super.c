@@ -17,7 +17,7 @@
 #include <linux/blkdev.h>
 #include <linux/locks.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 void rkfs_write_super(struct super_block *vfs_sb)
 {

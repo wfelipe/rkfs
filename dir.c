@@ -13,7 +13,7 @@
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 void rkfs_put_page(struct page *page)
 {

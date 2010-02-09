@@ -15,7 +15,7 @@
 #include <linux/locks.h>
 #include <linux/quotaops.h>
 
-#include <linux/rkfs.h>
+#include <rkfs.h>
 
 int rkfs__free_blocks(struct super_block *vfs_sb,
 		      struct inode *vfs_inode,
