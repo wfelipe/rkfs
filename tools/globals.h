@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <time.h>
 
-
 #define TRUE 1
 #define FALSE 0
 #define BUF_SIZE 255

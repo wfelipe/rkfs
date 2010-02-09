@@ -18,7 +18,7 @@ extern boolean verbose;
 
 void print_msg(const char *frmt, ...);
 void print_emsg(const char *frmt, ...);
-void disable_stream_buffering(FILE *fptr);
+void disable_stream_buffering(FILE * fptr);
 boolean is_valid_block_device(const char *device);
 int exec_cmd(const char *frmt, ...);
 boolean is_device_mounted(const char *device);

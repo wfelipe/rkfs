@@ -23,10 +23,10 @@ void print_usage(const char *prg_name);
 char *parse_args(int argc, char *argv[]);
 char *create_new_dir_block_template(ushort pinode, ushort cinode);
 int write_inode(register int fd, struct rkfs_super_block *sb,
-                ushort ino, struct rkfs_inode *inode);
+		ushort ino, struct rkfs_inode *inode);
 int create_root_directory(register int fd, struct rkfs_super_block *sb);
 int mark_badblocks(register int fd, struct rkfs_super_block *sb,
-                   ushort total_blocks, uint offset, ushort *total_bad_blocks);
+		   ushort total_blocks, uint offset, ushort * total_bad_blocks);
 int create_rkfs(const char *device, ushort total_blocks);
 
 #endif

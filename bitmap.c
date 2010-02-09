@@ -17,24 +17,24 @@
 #include <linux/rkfs.h>
 
 unsigned short rkfs_count_free(void *map, unsigned short offset,
-                                unsigned short total_blocks)
+			       unsigned short total_blocks)
 {
-    unsigned short sum = 0, i = 0, blkno = 0;
+	unsigned short sum = 0, i = 0, blkno = 0;
 
-    if( !map ) {
-        rkfs_bug("NULL map specified\n");
-        FAILED;
-        goto out;
-    }
+	if (!map) {
+		rkfs_bug("NULL map specified\n");
+		FAILED;
+		goto out;
+	}
 
-    for( i=0; i<RKFS_MIN_BLOCKS; i++ ) {
-        blkno = offset + i;
-        if( blkno > (total_blocks - 1) )
-            return sum;
-        if( !rkfs_test_bit(i,map) )
-            sum += 1;
-    }
+	for (i = 0; i < RKFS_MIN_BLOCKS; i++) {
+		blkno = offset + i;
+		if (blkno > (total_blocks - 1))
+			return sum;
+		if (!rkfs_test_bit(i, map))
+			sum += 1;
+	}
 
-out:
-    return sum;
+ out:
+	return sum;
 }
