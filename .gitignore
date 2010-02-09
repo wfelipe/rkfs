@@ -1,0 +1,42 @@
+#
+# taken from linux-2.6 git repository
+.*
+*.o
+*.o.*
+*.a
+*.s
+*.ko
+*.so
+*.so.dbg
+*.mod.c
+*.i
+*.lst
+*.symtypes
+*.order
+*.elf
+*.bin
+*.gz
+*.bz2
+*.lzma
+*.patch
+*.gcno
+
+#
+# Top-level generic files
+#
+tags
+TAGS
+vmlinux
+System.map
+Module.markers
+Module.symvers
+!.gitignore
+!.mailmap
+
+# cscope files
+cscope.*
+ncscope.*
+
+*.orig
+*~
+\#*#
