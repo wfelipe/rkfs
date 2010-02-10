@@ -11,7 +11,6 @@
 */
 
 #include <linux/fs.h>
-#include <linux/locks.h>
 #include <linux/smp_lock.h>
 
 #include <rkfs.h>

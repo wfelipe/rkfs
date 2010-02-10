@@ -15,7 +15,6 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/locks.h>
 #include <linux/blkdev.h>
 #include <asm/uaccess.h>
 

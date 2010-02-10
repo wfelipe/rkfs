@@ -11,7 +11,6 @@
 */
 
 #include <linux/fs.h>
-#include <linux/locks.h>
 #include <linux/quotaops.h>
 
 #include <rkfs.h>

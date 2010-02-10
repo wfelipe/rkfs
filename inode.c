@@ -12,7 +12,6 @@
 
 #include <linux/fs.h>
 #include <linux/ext2_fs.h>
-#include <linux/locks.h>
 #include <linux/smp_lock.h>
 #include <linux/sched.h>
 #include <linux/highuid.h>

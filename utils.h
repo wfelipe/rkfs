@@ -13,13 +13,11 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-#include <linux/config.h>
 #include <linux/module.h>
 #include <linux/string.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/locks.h>
 #include <linux/blkdev.h>
 #include <asm/uaccess.h>
 
