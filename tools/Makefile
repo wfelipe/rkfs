@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g -O0 -Wall
+CFLAGS = -g -O0 -Wall -D__RKFS_DEBUG__ -D__RKFS_DUMP_DEBUG__
 headers = mkrkfs.h rkfs.h utils.h
 objects = mkrkfs.o dumprkfs.o utils.o
 
