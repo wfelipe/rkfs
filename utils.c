@@ -32,7 +32,7 @@ void rkfs_dump_vfs_super_block(const struct super_block *sb,
 	va_end(vptr);
 
 	printk("\n%s\n", buf);
-	printk("VFS superblock: Device: %s\n", bdevname(sb->s_dev));
+	printk("VFS superblock: Device: %s\n", __bdevname(sb->s_dev, buf));
 	printk("VFS superblock: Block size: %ld\n", sb->s_blocksize);
 	printk("VFS superblock: Block size bits: %u\n", sb->s_blocksize_bits);
 	printk("VFS superblock: Dirt: %u\n", sb->s_dirt);
@@ -128,19 +128,18 @@ void rkfs_dump_vfs_inode(const struct inode *vfs_inode, const char *frmt, ...)
 
 	printk("\n%s", buf);
 	printk("VFS inode: Inode number: %ld\n", vfs_inode->i_ino);
-	printk("VFS inode: Device: %s\n", bdevname(vfs_inode->i_dev));
+	printk("VFS inode: Device: %s\n", __bdevname(vfs_inode->i_sb->s_dev, buf));
 	printk("VFS inode: Mode: %o\n", vfs_inode->i_mode);
 	printk("VFS inode: Link count: %d\n", vfs_inode->i_nlink);
 	printk("VFS inode: User ID: %d\n", vfs_inode->i_uid);
 	printk("VFS inode: Group ID: %d\n", vfs_inode->i_gid);
 	printk("VFS inode: Size: %ld\n", (long)vfs_inode->i_size);
 	printk("VFS inode: Block bits: %d\n", vfs_inode->i_blkbits);
-	printk("VFS inode: Block size: %ld\n", vfs_inode->i_blksize);
 	printk("VFS inode: Blocks: %ld\n", vfs_inode->i_blocks);
-	printk("VFS inode: Access time: %ld\n", (ulong) vfs_inode->i_atime);
+	printk("VFS inode: Access time: %ld\n", (ulong) vfs_inode->i_atime.tv_sec);
 	printk("VFS inode: Modification time: %ld\n",
-	       (ulong) vfs_inode->i_mtime);
-	printk("VFS inode: Change time: %ld\n", (ulong) vfs_inode->i_ctime);
+	       (ulong) vfs_inode->i_mtime.tv_sec);
+	printk("VFS inode: Change time: %ld\n", (ulong) vfs_inode->i_ctime.tv_sec);
 }
 
 /*

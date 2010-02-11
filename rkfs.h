@@ -13,6 +13,9 @@
 #ifndef _RKFS_H_
 #define _RKFS_H_
 
+#include <linux/statfs.h>
+#include "rkfs_sb.h"
+
 /*
 * Following are inode related constants.
 */

@@ -14,12 +14,14 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/blkdev.h>
+#include <linux/buffer_head.h>
 
-#include <rkfs.h>
+#include "rkfs.h"
 
 void rkfs_write_super(struct super_block *vfs_sb)
 {
 	unsigned short i = 0, rkfs_sb_count = 0;
+	struct rkfs_sb_info *rkfs_sbi = NULL;
 	struct buffer_head *bh = NULL;
 	struct rkfs_super_block *rkfs_dsb = NULL;
 
@@ -28,12 +30,13 @@ void rkfs_write_super(struct super_block *vfs_sb)
 		goto out;
 	}
 
-	rkfs_sb_count = vfs_sb->u.rkfs_sb.s_sb_count;
+	rkfs_sbi = vfs_sb->s_fs_info;
+	rkfs_sb_count = rkfs_sbi->s_sb_count;
 	rkfs_debug("Number of %s superblocks to write: %d\n", RKFS_NAME,
 		   rkfs_sb_count);
 
 	for (i = 0; i < rkfs_sb_count; i++) {
-		if (!(bh = vfs_sb->u.rkfs_sb.s_sbh[i])) {
+		if (!(bh = rkfs_sbi->s_sbh[i])) {
 			rkfs_bug("No %s superblock in memory\n", RKFS_NAME);
 			goto out;
 		}
@@ -61,18 +64,20 @@ void rkfs_put_super(struct super_block *vfs_sb)
 {
 	unsigned short i = 0, rkfs_sb_count = 0;
 	struct buffer_head *bh = NULL;
+	struct rkfs_sb_info *rkfs_sbi = NULL;
 
 	if (vfs_sb == NULL) {
 		rkfs_bug("VFS superblock is NULL\n");
 		goto out;
 	}
 
-	rkfs_sb_count = vfs_sb->u.rkfs_sb.s_sb_count;
+	rkfs_sbi = vfs_sb->s_fs_info;
+	rkfs_sb_count = rkfs_sbi->s_sb_count;
 	rkfs_debug("Number of %s superblocks to put: %d\n", RKFS_NAME,
 		   rkfs_sb_count);
 
 	for (i = 0; i < rkfs_sb_count; i++) {
-		if (!(bh = vfs_sb->u.rkfs_sb.s_sbh[i])) {
+		if (!(bh = rkfs_sbi->s_sbh[i])) {
 			rkfs_bug("No %s superblock in memory\n", RKFS_NAME);
 			goto out;
 		}
@@ -80,8 +85,8 @@ void rkfs_put_super(struct super_block *vfs_sb)
 		brelse(bh);
 	}
 
-	kfree(vfs_sb->u.rkfs_sb.s_sbh);
-	vfs_sb->u.rkfs_sb.s_sb_count = 0;
+	kfree(rkfs_sbi->s_sbh);
+	rkfs_sbi->s_sb_count = 0;
 	return;
 
  out:
@@ -96,6 +101,7 @@ int rkfs_statfs(struct super_block *vfs_sb, struct statfs *sbuf)
 	unsigned short i = 0, rkfs_sb_count = 0;
 	unsigned short offset = 0, tb = 0, fb = 0, fi = 0;
 	int err = -EIO;
+	struct rkfs_sb_info *rkfs_sbi = NULL;
 
 	if (vfs_sb == NULL) {
 		rkfs_bug("VFS superblock is NULL\n");
@@ -111,9 +117,10 @@ int rkfs_statfs(struct super_block *vfs_sb, struct statfs *sbuf)
 	sbuf->f_bsize = vfs_sb->s_blocksize;
 	sbuf->f_namelen = RKFS_MAX_FILENAME_LEN;
 
-	rkfs_sb_count = vfs_sb->u.rkfs_sb.s_sb_count;
+	rkfs_sbi = vfs_sb->s_fs_info;
+	rkfs_sb_count = rkfs_sbi->s_sb_count;
 	for (i = 0; i < rkfs_sb_count; i++) {
-		if (!(bh = vfs_sb->u.rkfs_sb.s_sbh[i])) {
+		if (!(bh = rkfs_sbi->s_sbh[i])) {
 			rkfs_bug("No %s superblock in memory\n", RKFS_NAME);
 			goto out;
 		}
@@ -164,6 +171,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 	struct buffer_head *bh = NULL;
 	struct rkfs_super_block *rkfs_dsb = NULL;
 	struct inode *vfs_root_inode = NULL;
+	struct rkfs_sb_info *rkfs_sbi = NULL;
 
 	if (vfs_sb == NULL) {
 		rkfs_bug("VFS superblock is NULL\n");
@@ -213,7 +221,8 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 
 	tb = rkfs_dsb->s_total_blocks;
 	rkfs_sb_count = (tb + RKFS_MIN_BLOCKS - 1) / RKFS_MIN_BLOCKS;
-	vfs_sb->u.rkfs_sb.s_sb_count = rkfs_sb_count;
+	rkfs_sbi = vfs_sb->s_fs_info;
+	rkfs_sbi->s_sb_count = rkfs_sb_count;
 	rkfs_debug("Total superblocks in filesystem: %d\n", rkfs_sb_count);
 
 	vfs_sb->s_blocksize_bits = 10;
@@ -222,16 +231,15 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 	vfs_sb->s_maxbytes = rkfs_max_file_size(tb, rkfs_sb_count);
 	vfs_sb->s_op = &rkfs_sops;
 
-	vfs_sb->u.rkfs_sb.s_sbh = kmalloc(rkfs_sb_count *
-					  sizeof(struct buffer_head *),
-					  GFP_KERNEL);
-	if (vfs_sb->u.rkfs_sb.s_sbh == NULL) {
+	rkfs_sbi->s_sbh = kmalloc(rkfs_sb_count *
+				  sizeof(struct buffer_head *), GFP_KERNEL);
+	if (rkfs_sbi->s_sbh == NULL) {
 		rkfs_printk("Not enough memory to load %s superblocks\n",
 			    RKFS_NAME);
 		goto release_and_out;
 	}
 
-	vfs_sb->u.rkfs_sb.s_sbh[0] = bh;
+	rkfs_sbi->s_sbh[0] = bh;
 	offset += RKFS_MIN_BLOCKS;
 	for (i = 1; i < rkfs_sb_count; i++) {
 		loaded_sb = i;
@@ -250,7 +258,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 			goto cleanup_loaded_sb;
 		}
 
-		vfs_sb->u.rkfs_sb.s_sbh[i] = bh;
+		rkfs_sbi->s_sbh[i] = bh;
 		offset += RKFS_MIN_BLOCKS;
 	}
 
@@ -278,8 +286,8 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 
  cleanup_loaded_sb:
 	for (j = 0; j < loaded_sb; j++)
-		brelse(vfs_sb->u.rkfs_sb.s_sbh[j]);
-	kfree(vfs_sb->u.rkfs_sb.s_sbh);
+		brelse(rkfs_sbi->s_sbh[j]);
+	kfree(rkfs_sbi->s_sbh);
 	goto out;
 
  release_and_out:
@@ -291,12 +299,12 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 }
 
 static struct super_operations rkfs_sops = {
- put_super:rkfs_put_super,
- write_super:rkfs_write_super,
- statfs:rkfs_statfs,
- read_inode:rkfs_read_inode,
- write_inode:rkfs_write_inode,
- delete_inode:rkfs_delete_inode,
+	.put_super = rkfs_put_super,
+	.write_super = rkfs_write_super,
+	.statfs = rkfs_statfs,
+	.read_inode = rkfs_read_inode,
+	.write_inode = rkfs_write_inode,
+	.delete_inode = rkfs_delete_inode,
 };
 
 static DECLARE_FSTYPE_DEV(rkfs_type, "rkfs", rkfs_read_super);
