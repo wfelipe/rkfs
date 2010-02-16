@@ -207,7 +207,6 @@ unsigned short rkfs_count_free(void *map, unsigned short offset,
 /*
 * rkf/super.c
 */
-extern struct super_operations rkfs_sops;
 void rkfs_write_super(struct super_block *vfs_sb);
 void rkfs_put_super(struct super_block *vfs_sb);
 int rkfs_statfs(struct super_block *vfs_sb, struct statfs *sbuf);

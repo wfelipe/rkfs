@@ -18,6 +18,15 @@
 
 #include "rkfs.h"
 
+static const struct super_operations rkfs_sops = {
+	.put_super = rkfs_put_super,
+	.write_super = rkfs_write_super,
+	.statfs = rkfs_statfs,
+	.read_inode = rkfs_read_inode,
+	.write_inode = rkfs_write_inode,
+	.delete_inode = rkfs_delete_inode,
+};
+
 void rkfs_write_super(struct super_block *vfs_sb)
 {
 	unsigned short i = 0, rkfs_sb_count = 0;
@@ -180,7 +189,7 @@ static int rkfs_fill_super(struct super_block *vfs_sb, void *data, int silent)
 	}
 
 	dev = vfs_sb->s_dev;
-	blk_size = bdev_logical_block_size(vfs_sb->s_bdev);
+	blk_size = vfs_sb->s_blocksize;
 	if (blk_size > RKFS_BLOCK_SIZE) {
 		rkfs_printk("Block size (%d) too big for %s\n", blk_size,
 			    RKFS_NAME);
@@ -306,15 +315,6 @@ static int rkfs_get_sb(struct file_system_type *fs_type,
 	return get_sb_bdev(fs_type, flags, dev_name, data, rkfs_fill_super,
 			   mnt);
 }
-
-static struct super_operations rkfs_sops = {
-	.put_super = rkfs_put_super,
-	.write_super = rkfs_write_super,
-	.statfs = rkfs_statfs,
-	.read_inode = rkfs_read_inode,
-	.write_inode = rkfs_write_inode,
-	.delete_inode = rkfs_delete_inode,
-};
 
 static struct file_system_type rkfs_type = {
 	.owner = THIS_MODULE,
