@@ -161,17 +161,18 @@ int rkfs_statfs(struct super_block *vfs_sb, struct statfs *sbuf)
 	return err;
 }
 
-struct super_block *rkfs_read_super(struct super_block *vfs_sb,
-				    void *data, int silent)
+static int rkfs_fill_super(struct super_block *vfs_sb, void *data, int silent)
 {
 	int blk_size = 0;
-	kdev_t dev;
+	dev_t dev;
 	unsigned short offset = 0, rkfs_sb_count = 0, tb = 0;
 	unsigned short i = 0, j = 0, loaded_sb = 0;
 	struct buffer_head *bh = NULL;
 	struct rkfs_super_block *rkfs_dsb = NULL;
 	struct inode *vfs_root_inode = NULL;
 	struct rkfs_sb_info *rkfs_sbi = NULL;
+	int ret = -EINVAL;
+	char b[BDEVNAME_SIZE];
 
 	if (vfs_sb == NULL) {
 		rkfs_bug("VFS superblock is NULL\n");
@@ -179,7 +180,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 	}
 
 	dev = vfs_sb->s_dev;
-	blk_size = get_hardsect_size(dev);
+	blk_size = bdev_logical_block_size(vfs_sb->s_bdev);
 	if (blk_size > RKFS_BLOCK_SIZE) {
 		rkfs_printk("Block size (%d) too big for %s\n", blk_size,
 			    RKFS_NAME);
@@ -187,13 +188,13 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 	}
 
 	blk_size = RKFS_BLOCK_SIZE;
-	if (set_blocksize(dev, blk_size) < 0) {
+	if (sb_set_blocksize(vfs_sb, blk_size) < 0) {
 		rkfs_printk("Unable to set blocksize for device %s to %d\n",
-			    bdevname(dev), blk_size);
+			    __bdevname(dev, b), blk_size);
 		goto out;
 	}
 
-	if (!(bh = bread(dev, RKFS_SUPER_BLOCK, blk_size))) {
+	if (!(bh = sb_bread(vfs_sb, blk_size))) {
 		rkfs_printk("Unable to read the %s superblock at offset %d\n",
 			    RKFS_NAME, RKFS_SUPER_BLOCK);
 		goto out;
@@ -201,7 +202,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 
 	if (bh->b_size != blk_size) {
 		rkfs_printk
-		    ("Conflict in blocksize between buffer cache (%d) and %s\n",
+		    ("Conflict in blocksize between buffer cache (%ld) and %s\n",
 		     bh->b_size, RKFS_NAME);
 		goto release_and_out;
 	}
@@ -209,7 +210,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 	rkfs_dsb = (struct rkfs_super_block *)((char *)bh->b_data);
 	if (rkfs_dsb->s_fsid != RKFS_ID) {
 		rkfs_printk("Can't find valid %s filesystem on device %s\n",
-			    RKFS_NAME, bdevname(dev));
+			    RKFS_NAME, __bdevname(dev, b));
 		goto release_and_out;
 	}
 
@@ -243,7 +244,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 	offset += RKFS_MIN_BLOCKS;
 	for (i = 1; i < rkfs_sb_count; i++) {
 		loaded_sb = i;
-		if (!(bh = bread(dev, offset, blk_size))) {
+		if (!(bh = sb_bread(vfs_sb, blk_size))) {
 			rkfs_printk
 			    ("Unable to read %s superblock at offset %d\n",
 			     RKFS_NAME, offset);
@@ -282,7 +283,7 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 		goto cleanup_loaded_sb;
 	}
 
-	return vfs_sb;
+	return 0;
 
  cleanup_loaded_sb:
 	for (j = 0; j < loaded_sb; j++)
@@ -295,7 +296,15 @@ struct super_block *rkfs_read_super(struct super_block *vfs_sb,
 
  out:
 	FAILED;
-	return NULL;
+	return ret;
+}
+
+static int rkfs_get_sb(struct file_system_type *fs_type,
+		       int flags, const char *dev_name, void *data,
+		       struct vfsmount *mnt)
+{
+	return get_sb_bdev(fs_type, flags, dev_name, data, rkfs_fill_super,
+			   mnt);
 }
 
 static struct super_operations rkfs_sops = {
@@ -307,7 +316,13 @@ static struct super_operations rkfs_sops = {
 	.delete_inode = rkfs_delete_inode,
 };
 
-static DECLARE_FSTYPE_DEV(rkfs_type, "rkfs", rkfs_read_super);
+static struct file_system_type rkfs_type = {
+	.owner = THIS_MODULE,
+	.name = "rkfs",
+	.get_sb = rkfs_get_sb,
+	.kill_sb = kill_block_super,
+	.fs_flags = FS_REQUIRES_DEV,
+};
 
 static int __init init_rkfs(void)
 {
