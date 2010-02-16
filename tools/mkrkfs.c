@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
 
 	if (!is_valid_block_device(device)) {
 		print_emsg
-		    ("\nDevice %s does'nt exist or not a valid block device.",
+		    ("\nDevice %s doesn't exist or not a valid block device.",
 		     device);
 		goto error_exit;
 	}
